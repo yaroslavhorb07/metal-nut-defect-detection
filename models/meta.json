@@ -1,0 +1,57 @@
+{
+  "img_size": 320,
+  "threshold": 0.060000000000000005,
+  "uncertain_logit_margin": 1.0,
+  "positive_class": "defect",
+  "trained_at": "2026-10-13T16:07:10+00:00",
+  "config": {
+    "data_dir": "dataset",
+    "model_dir": "models",
+    "report_dir": "reports",
+    "img_size": 320,
+    "seed": 42,
+    "val_size": 0.15,
+    "test_size": 0.15,
+    "batch_size": 16,
+    "head_epochs": 15,
+    "finetune_epochs": 30,
+    "head_lr": 0.001,
+    "finetune_lr": 0.0001,
+    "unfreeze_layers": 80,
+    "target_defect_recall": 0.95,
+    "uncertain_logit_margin": 1.0
+  },
+  "test_metrics": {
+    "threshold": 0.060000000000000005,
+    "accuracy": 0.9787234042553191,
+    "defect_recall": 0.9285714285714286,
+    "defect_precision": 1.0,
+    "specificity": 1.0,
+    "f1": 0.962962962962963,
+    "mcc": 0.9493474096460581,
+    "roc_auc": 0.9696969696969697,
+    "pr_auc": 0.9642857142857144,
+    "tn": 33,
+    "fp": 0,
+    "fn": 1,
+    "tp": 13
+  },
+  "test_ci95": {
+    "accuracy": [
+      0.9361702127659575,
+      1.0
+    ],
+    "defect_recall": [
+      0.75,
+      1.0
+    ],
+    "specificity": [
+      1.0,
+      1.0
+    ],
+    "roc_auc": [
+      0.889592352092352,
+      1.0
+    ]
+  }
+}

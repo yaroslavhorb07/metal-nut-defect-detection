@@ -1,0 +1,11 @@
+keras==3.15.1
+tensorflow==2.21.0
+numpy>=2.0
+pandas>=2.2
+scikit-learn>=1.5
+matplotlib>=3.9
+pillow>=10.4
+pyyaml>=6.0
+fastapi>=0.115
+uvicorn>=0.30
+python-multipart>=0.0.9

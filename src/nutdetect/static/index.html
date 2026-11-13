@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nut defect detector</title>
+<style>
+  :root {
+    color-scheme: light;
+    --blue: #0b2a5b;       /* deep blue */
+    --charcoal: #2e3338;   /* charcoal grey */
+    --white: #ffffff;
+    --orange: #ff6700;     /* safety orange */
+    --bg: #f4f5f7;
+    --card: var(--white);
+    --text: var(--charcoal);
+    --muted: #6b7178;
+    --line: #dfe2e6;
+    --good: var(--blue);
+    --track: #e8ebef;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #1f2327;
+      --card: var(--charcoal);
+      --text: var(--white);
+      --muted: #a9b0b8;
+      --line: #43494f;
+      --good: #8fb3ff;
+      --track: #43494f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+
+  header { background: var(--blue); color: var(--white); border-bottom: 3px solid var(--orange); }
+  header .wrap { padding: 18px 16px; }
+  header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: .02em; }
+  header p { margin: 2px 0 0; font-size: .85rem; opacity: .75; }
+
+  .wrap { max-width: 480px; margin: 0 auto; }
+  main.wrap { padding: 24px 16px 40px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+
+  .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+          min-height: 160px; padding: 16px; border: 2px dashed var(--line); border-radius: 6px;
+          text-align: center; cursor: pointer; transition: border-color .15s; }
+  .drop:hover, .drop.over { border-color: var(--orange); }
+  .drop strong { font-weight: 600; }
+  .drop span { color: var(--muted); font-size: .85rem; }
+  .drop img { max-width: 100%; max-height: 260px; border-radius: 4px; }
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  input[type=file]:focus-visible + .drop { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+  button { width: 100%; margin-top: 16px; padding: 12px; border: 0; border-radius: 6px;
+           background: var(--orange); color: var(--charcoal); font: inherit; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.06); }
+  button:disabled { opacity: .5; cursor: default; }
+
+  #result:empty { display: none; }
+  #result { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .verdict { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: 700; letter-spacing: .06em; font-size: .9rem; }
+  .verdict.good { background: var(--blue); color: var(--white); }
+  .verdict.defective { background: var(--orange); color: var(--charcoal); }
+  @media (prefers-color-scheme: dark) { .verdict.good { background: var(--good); color: var(--blue); } }
+
+  .meter { position: relative; height: 6px; margin: 16px 0 6px; background: var(--track); border-radius: 3px; }
+  .meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--good); }
+  .meter .fill.defective { background: var(--orange); }
+  .meter .mark { position: absolute; top: -4px; width: 2px; height: 14px; background: var(--text); }
+  .muted { color: var(--muted); font-size: .85rem; }
+  .note { margin-top: 12px; padding: 8px 12px; border-left: 3px solid var(--orange); font-size: .9rem; }
+  .error { color: var(--orange); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Nut defect detector</h1>
+    <p>Upload a photo of a metal nut to check it for defects.</p>
+  </div>
+</header>
+<main class="wrap">
+  <form id="form" class="card">
+    <input id="file" type="file" accept="image/*" required>
+    <label for="file" class="drop" id="drop">
+      <img id="preview" alt="Selected image" hidden>
+      <strong id="prompt">Choose an image</strong>
+      <span id="hint">or drop it here</span>
+    </label>
+    <button id="submit" disabled>Check nut</button>
+    <div id="result" aria-live="polite"></div>
+  </form>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const form = $("form"), file = $("file"), drop = $("drop"), preview = $("preview");
+const prompt = $("prompt"), hint = $("hint"), submit = $("submit"), result = $("result");
+
+function show(f) {
+  if (!f) return;
+  preview.src = URL.createObjectURL(f);
+  preview.hidden = false;
+  prompt.hidden = true;
+  hint.textContent = f.name;
+  submit.disabled = false;
+  result.textContent = "";
+}
+
+file.addEventListener("change", () => show(file.files[0]));
+
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, () => drop.classList.remove("over")));
+drop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  if (!e.dataTransfer.files.length) return;
+  file.files = e.dataTransfer.files;
+  show(file.files[0]);
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!file.files[0]) return;
+  submit.disabled = true;
+  submit.textContent = "Checking…";
+  result.textContent = "";
+  const body = new FormData();
+  body.append("file", file.files[0]);
+  try {
+    const res = await fetch("/predict", { method: "POST", body });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "request failed");
+    const pct = data.prob_defect * 100;
+    const thr = data.threshold * 100;
+    const cls = data.label === "defective" ? "defective" : "good";
+    result.innerHTML = `
+      <span class="verdict ${cls}">${cls === "defective" ? "DEFECTIVE" : "GOOD"}</span>
+      <div class="meter" role="img" aria-label="Defect probability ${pct.toFixed(1)} percent">
+        <div class="fill ${cls}" style="width:${Math.max(pct, 1).toFixed(1)}%"></div>
+        <div class="mark" style="left:${thr.toFixed(1)}%" title="Threshold"></div>
+      </div>
+      <div class="muted">Defect probability ${pct.toFixed(1)}% · threshold ${thr.toFixed(0)}%</div>
+      ${data.uncertain ? '<div class="note">Close to the threshold, worth a manual look.</div>' : ""}`;
+  } catch (err) {
+    result.innerHTML = "";
+    const p = document.createElement("div");
+    p.className = "error";
+    p.textContent = "Error: " + err.message;
+    result.append(p);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Check nut";
+  }
+});
+</script>
+</body>
+</html>

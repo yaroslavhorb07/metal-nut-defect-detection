@@ -1,0 +1,6 @@
+dataset
+reports
+tests
+.git
+.venv
+__pycache__

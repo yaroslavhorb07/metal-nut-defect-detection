@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Environments and tools
+.venv/
+.pytest_cache/
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Dataset: download it from MVTec (see README), it isn't redistributed here
+dataset/

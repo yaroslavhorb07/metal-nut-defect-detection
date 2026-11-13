@@ -1,0 +1,19 @@
+data_dir: dataset
+model_dir: models
+report_dir: reports
+
+img_size: 320
+seed: 42
+val_size: 0.15
+test_size: 0.15
+
+batch_size: 16
+head_epochs: 15
+finetune_epochs: 30
+head_lr: 0.001
+finetune_lr: 0.0001
+unfreeze_layers: 80
+
+target_defect_recall: 0.95
+# flag a prediction as uncertain when its log-odds are within this of the threshold's
+uncertain_logit_margin: 1.0
